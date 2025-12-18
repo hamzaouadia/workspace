@@ -18,16 +18,31 @@ jobs:
   create-pr:
     name: Create PR to main
     runs-on: ubuntu-latest
-    if: >
-      github.event.workflow_run.conclusion == 'success' &&
-      github.event.workflow_run.head_branch != 'main'
+    if: github.event.workflow_run.conclusion == 'success'
     steps:
+      - name: Debug workflow_run context
+        uses: actions/github-script@v7
+        with:
+          script: |
+            core.info(`head_branch: ${context.payload.workflow_run.head_branch}`);
+            core.info(`head_repository.full_name: ${context.payload.workflow_run.head_repository.full_name}`);
+            core.info(`Event: ${JSON.stringify(context.payload.workflow_run, null, 2)}`);
+      
       - name: Check for open CI failure issues
         id: check-issues
         uses: actions/github-script@v7
         with:
           script: |
             const branch = context.payload.workflow_run.head_branch;
+            
+            // Skip if branch is main
+            if (branch === 'main') {
+              core.setOutput('should_skip', 'true');
+              core.info(`Skipping PR creation for main branch`);
+              return;
+            }
+            core.setOutput('should_skip', 'false');
+            
             const issues = await github.rest.issues.listForRepo({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -49,13 +64,13 @@ jobs:
             }
 
       - name: Checkout
-        if: steps.check-issues.outputs.has_issues == 'false'
+        if: steps.check-issues.outputs.should_skip == 'false' && steps.check-issues.outputs.has_issues == 'false'
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.workflow_run.head_branch }}
 
       - name: Create PR to main
-        if: steps.check-issues.outputs.has_issues == 'false'
+        if: steps.check-issues.outputs.should_skip == 'false' && steps.check-issues.outputs.has_issues == 'false'
         uses: diillson/auto-pull-request@v1.0.1
         with:
           source_branch: ${{ github.event.workflow_run.head_branch }}
