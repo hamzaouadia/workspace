@@ -42,62 +42,18 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Create PR to main if none exists
+      - name: Create PR to main
         if: success()
-        uses: actions/github-script@v7
+        uses: diillson/auto-pull-request@v1.0.1
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const { repo, owner } = context.repo;
-            const head = context.ref.replace('refs/heads/', '');
-            const base = 'main';
-            const compareUrl = `https://github.com/${owner}/${repo}/compare/${base}...${head}?quick_pull=1`;
+          destination_branch: "main"
+          pr_title: "ci: open PR for ${{ github.ref_name }}"
+          pr_body: |
+            This PR was automatically created after CI checks passed on branch `${{ github.ref_name }}`.
 
-            // Check if an open PR already exists
-            const existing = await github.rest.pulls.list({
-              owner,
-              repo,
-              state: 'open',
-              head: `${owner}:${head}`,
-              base,
-              per_page: 1,
-            });
+            - Lint: ✅ passed
+            - Typecheck: ✅ passed
+            - Build: ✅ passed
 
-            if (existing.data.length > 0) {
-              const pr = existing.data[0];
-              core.info(`PR already exists: #${pr.number} -> ${pr.html_url}`);
-              await core.summary
-                .addHeading('Auto-PR')
-                .addRaw(`Existing PR: <a href="${pr.html_url}">#${pr.number}</a>`, true)
-                .write();
-              return;
-            }
-
-            const title = `ci: open PR for ${head}`;
-            const body = [
-              `This PR was automatically created after CI checks passed on branch \`${head}\`.`,
-              '',
-              '- Lint: passed',
-              '- Typecheck: passed',
-              '- Build: passed',
-              '',
-              'Please review and squash-merge when ready.'
-            ].join('\n');
-
-            try {
-              const pr = await github.rest.pulls.create({ owner, repo, head, base, title, body, draft: false });
-              core.info(`Created PR #${pr.data.number}: ${pr.data.html_url}`);
-              await core.summary
-                .addHeading('Auto-PR')
-                .addRaw(`Created PR: <a href="${pr.data.html_url}">#${pr.data.number}</a>`, true)
-                .write();
-            } catch (error) {
-              const msg = String(error?.message || error);
-              core.warning(`Could not create PR automatically: ${msg}`);
-              await core.summary
-                .addHeading('Auto-PR blocked')
-                .addRaw('GitHub Actions is not permitted to create PRs for this repository.', true)
-                .addBreak()
-                .addRaw(`You can open a PR manually: <a href="${compareUrl}">${compareUrl}</a>`, true)
-                .write();
-            }
+            Please review and squash-merge when ready.
+          github_token: ${{ secrets.GITHUB_TOKEN }}
