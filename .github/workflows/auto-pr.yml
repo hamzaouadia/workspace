@@ -5,12 +5,8 @@ on:
     workflows: ["Create Issues on CI Failure"]
     types:
       - completed
-    branches:
-      - 'feat/**'
-      - 'fix/**'
-      - 'chore/**'
-      - 'docs/**'
-      - 'refactor/**'
+    # Note: Don't filter by branches here because workflow_run always reports main as head_branch
+    # Instead, we filter in the job-level 'if' condition using github.event.workflow_run.head_branch
   workflow_dispatch:
 
 permissions:
