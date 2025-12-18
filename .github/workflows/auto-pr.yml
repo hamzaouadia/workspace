@@ -2,7 +2,7 @@ name: Auto PR on Successful CI
 
 on:
   workflow_run:
-    workflows: ["CI/CD Pipeline"]
+    workflows: ["Create Issues on CI Failure"]
     types:
       - completed
     branches:
@@ -16,6 +16,7 @@ on:
 permissions:
   contents: read
   pull-requests: write
+  issues: read
 
 jobs:
   create-pr:
@@ -25,12 +26,40 @@ jobs:
       github.event.workflow_run.conclusion == 'success' &&
       github.event.workflow_run.head_branch != 'main'
     steps:
+      - name: Check for open CI failure issues
+        id: check-issues
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const branch = context.payload.workflow_run.head_branch;
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'ci-failure',
+              per_page: 100
+            });
+            
+            const branchIssue = issues.data.find(issue => 
+              issue.title.includes(branch) || issue.body.includes(branch)
+            );
+            
+            if (branchIssue) {
+              core.setOutput('has_issues', 'true');
+              core.info(`Found open CI issue #${branchIssue.number} for branch ${branch}`);
+            } else {
+              core.setOutput('has_issues', 'false');
+              core.info(`No open CI issues for branch ${branch}`);
+            }
+
       - name: Checkout
+        if: steps.check-issues.outputs.has_issues == 'false'
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.workflow_run.head_branch }}
 
       - name: Create PR to main
+        if: steps.check-issues.outputs.has_issues == 'false'
         uses: diillson/auto-pull-request@v1.0.1
         with:
           source_branch: ${{ github.event.workflow_run.head_branch }}
