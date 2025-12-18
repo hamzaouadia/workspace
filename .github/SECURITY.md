@@ -1,80 +1,75 @@
 # Security Policy
 
+This policy covers how to report vulnerabilities and what we support for this Next.js (Node/TypeScript) project.
+
 ## Supported Versions
 
-We provide security updates for the following versions:
+We currently support security fixes for the latest code on `main` and the most recent 0.x release.
 
-| Version | Supported          |
-| ------- | ------------------ |
-| 1.0.x   | ✅ Yes             |
-| < 1.0   | ❌ No              |
+| Track            | Supported |
+| ---------------- | --------- |
+| main             | ✅ Yes    |
+| latest 0.x      | ✅ Yes    |
+| older 0.x minors | ❌ No     |
+
+> Note: Until v1.0.0, only the latest minor is supported. Please upgrade regularly.
 
 ## Reporting a Vulnerability
 
-We take security vulnerabilities seriously. If you discover a security vulnerability in this project, please follow these steps:
+We take security seriously. Please report vulnerabilities via private channels only.
 
-### 🔒 Private Disclosure
+### 🔒 Private Disclosure (Preferred)
 
-**Please do not report security vulnerabilities through public GitHub issues.**
+1) GitHub Security Advisory
+- Open the repository’s [Security advisories](../../security/advisories)
+- Click “Report a vulnerability” and provide details
 
-Instead, please report them privately using one of the following methods:
-
-1. **GitHub Security Advisories** (Preferred):
-   - Go to the [Security tab](../../security/advisories) of this repository
-   - Click "Report a vulnerability"
-   - Fill out the form with details about the vulnerability
-
-2. **Email** (Alternative):
-   - Send an email to the project maintainers
-   - Include detailed information about the vulnerability
-   - Use a clear subject line like "Security Vulnerability Report"
+2) Maintainers (Alternative)
+- Contact the repo owners privately (e.g., via profile email)
+- Do not open public issues for sensitive reports
 
 ### 📋 What to Include
+- Description and impact
+- Steps to reproduce and affected versions/commit
+- Environment details (OS, browser, Node version)
+- Proof of concept (if applicable)
+- Any suggested remediation
 
-When reporting a vulnerability, please include:
+### ⏱️ Response Targets
+- Initial triage: within 48 hours
+- Assessment and plan: within 5 business days
+- Target fix windows (guidance):
+   - Critical: 7 days
+   - High: 14 days
+   - Medium: 30 days
+   - Low: next scheduled release
 
-- **Description**: A clear description of the vulnerability
-- **Impact**: What could an attacker accomplish?
-- **Reproduction Steps**: Step-by-step instructions to reproduce the issue
-- **Environment**: Version numbers, operating system, etc.
-- **Proof of Concept**: Code, screenshots, or other evidence (if applicable)
-- **Suggested Fix**: If you have ideas for how to fix the issue
+We’ll keep you updated throughout the process and credit you in the advisory if you’d like.
 
-### ⏱️ Response Timeline
+## Safe Harbor
 
-- **Initial Response**: Within 48 hours of receiving the report
-- **Assessment**: Within 5 business days, we'll provide an initial assessment
-- **Fix Timeline**: Depends on severity, but typically:
-  - Critical: Within 7 days
-  - High: Within 14 days
-  - Medium: Within 30 days
-  - Low: Next scheduled release
+We support good-faith security research. If you follow responsible disclosure (no data exfiltration, no service disruption, avoid privacy violations, give us reasonable time to fix), we will not pursue legal action.
 
-### 🏆 Recognition
+Out of scope examples:
+- Denial of service (DoS) or rate-limit exhaustion
+- Social engineering of maintainers or users
+- Issues in third-party services/infrastructure
 
-We appreciate responsible disclosure and will:
+## Operational Guidance (for users and deployers)
 
-- Acknowledge your contribution in the security advisory
-- Credit you in the CHANGELOG (if you wish)
-- Consider you for our security hall of fame (if we create one)
+- Keep dependencies up to date (Dependabot is enabled)
+- Run CI checks (`npm ci`, `npm run lint`, `npm run typecheck`, `npm run build`)
+- Never commit secrets or `.env*` files; use hosting provider environment variables
+- Prefer HTTPS everywhere; configure security headers (CSP, HSTS, X-Frame-Options)
+- Validate and sanitize all inputs; beware of XSS/SSRF
+- Restrict external image domains in `next.config.js` if using Next/Image
+- Regularly review `npm audit` and apply patches
 
-### 🛡️ Security Best Practices
+## References
 
-For users of this project:
+- OWASP Top 10: https://owasp.org/www-project-top-ten/
+- Node.js Best Practices (OWASP NodeGoat/cheat sheets)
+- Next.js Security Headers: https://nextjs.org/docs/app/building-your-application/configuring/headers
+- npm Audit: https://docs.npmjs.com/cli/v9/commands/npm-audit
 
-1. **Keep Dependencies Updated**: Regularly update to the latest version
-2. **Monitor Security Advisories**: Watch this repository for security updates
-3. **Use Virtual Environments**: Isolate dependencies in virtual environments
-4. **Follow Principle of Least Privilege**: Run with minimal necessary permissions
-5. **Validate Input**: Always validate and sanitize user input
-6. **Use HTTPS**: Ensure secure communications in production
-
-### 📚 Security Resources
-
-- [Python Security Guidelines](https://python.org/dev/security/)
-- [OWASP Python Security](https://owasp.org/www-project-python-security/)
-- [Bandit Security Linter](https://bandit.readthedocs.io/)
-
----
-
-Thank you for helping keep our project and community safe! 🙏
+Thank you for helping keep our project and community safe.
