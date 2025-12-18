@@ -8,6 +8,11 @@ on:
       - 'chore/**'
       - 'docs/**'
       - 'refactor/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
 
 jobs:
   validate-and-open-pr:
@@ -36,20 +41,41 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Create or update PR to main
+      - name: Create PR to main if none exists
         if: success()
-        uses: peter-evans/create-pull-request@v6
+        uses: actions/github-script@v7
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          base: main
-          branch: ${{ github.ref_name }}
-          title: "ci: open PR for ${{ github.ref_name }}"
-          body: |
-            This PR was automatically created after CI checks passed on branch `${{ github.ref_name }}`.
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { repo, owner } = context.repo;
+            const head = context.ref.replace('refs/heads/', '');
+            const base = 'main';
 
-            - Lint: passed
-            - Typecheck: passed
-            - Build: passed
+            // Check if an open PR already exists
+            const existing = await github.rest.pulls.list({
+              owner,
+              repo,
+              state: 'open',
+              head: `${owner}:${head}`,
+              base,
+              per_page: 1,
+            });
 
-            Please review and squash-merge when ready.
-          draft: false
+            if (existing.data.length > 0) {
+              core.info(`PR already exists: #${existing.data[0].number} -> ${existing.data[0].html_url}`);
+              return;
+            }
+
+            const title = `ci: open PR for ${head}`;
+            const body = [
+              `This PR was automatically created after CI checks passed on branch \`${head}\`.`,
+              '',
+              '- Lint: passed',
+              '- Typecheck: passed',
+              '- Build: passed',
+              '',
+              'Please review and squash-merge when ready.'
+            ].join('\n');
+
+            const pr = await github.rest.pulls.create({ owner, repo, head, base, title, body, draft: false });
+            core.info(`Created PR #${pr.data.number}: ${pr.data.html_url}`);
