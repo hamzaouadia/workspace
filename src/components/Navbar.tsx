@@ -74,7 +74,7 @@ export default function Navbar() {
                             <a href="#top" className='' onClick={() => setOpen(false)}>Home</a>
                         </div>
                         <div className='px-4'>
-                            >
+                            {'>'}
                         </div>
                     </div>
                     <div className='flex flex-row justify-between items-center border-b-2 border-white w-full py-2'>
@@ -82,7 +82,7 @@ export default function Navbar() {
                             <a href="#reservation" className='' onClick={() => setOpen(false)}>Reservation</a>
                         </div>
                         <div className='px-4'>
-                            >
+                            {'>'}
                         </div>
                     </div>
                     <div className='flex flex-row justify-between items-center border-b-2 border-white w-full py-2'>
@@ -90,7 +90,7 @@ export default function Navbar() {
                             <a href="#about" className='' onClick={() => setOpen(false)}>About</a>
                         </div>
                         <div className='px-4'>
-                            >
+                            {'>'}
                         </div>
                     </div>
                     <div className='flex flex-row justify-between items-center border-b-2 border-white w-full py-2'>
@@ -98,7 +98,7 @@ export default function Navbar() {
                             <a href="#contact" className='' onClick={() => setOpen(false)}>Contact</a>
                         </div>
                         <div className='px-4'>
-                            >
+                            {'>'}
                         </div>
                     </div>
                     <div className='flex flex-row justify-between items-center border-b-2 border-white w-full py-2'>
@@ -106,16 +106,13 @@ export default function Navbar() {
                             <a href="#find" className='' onClick={() => setOpen(false)}>Find</a>
                         </div>
                         <div className='px-4'>
-                            >
+                            {'>'}
                         </div>
                     </div>
                 </div>
             </nav>
             <div className='w-full h-1/4 flex flex-col justify-center items-center'>
                 <div className='flex gap-6'>
-                    <a href="#github" aria-label="GitHub" className='inline-flex h-10 w-10 items-center justify-center rounded-full text-white'>
-                        <span className='text-xs font-semibold'>GH</span>
-                    </a>
                     <a href="#instagram" aria-label="Instagram" className='inline-flex h-10 w-10 items-center justify-center rounded-full text-white'>
                         <span className='text-xs font-semibold'>IG</span>
                     </a>
@@ -125,6 +122,7 @@ export default function Navbar() {
                     <a href="#tiktok" aria-label="TikTok" className='inline-flex h-10 w-10 items-center justify-center rounded-full text-white border border-white/10'>
                         <span className='text-xs font-semibold'>TK</span>
                     </a>
+                    
                 </div>
             </div>
         </div>
