@@ -13,6 +13,7 @@ on:
 permissions:
   contents: read
   pull-requests: write
+  issues: write
 
 jobs:
   validate-and-open-pr:
@@ -50,6 +51,7 @@ jobs:
             const { repo, owner } = context.repo;
             const head = context.ref.replace('refs/heads/', '');
             const base = 'main';
+            const compareUrl = `https://github.com/${owner}/${repo}/compare/${base}...${head}?quick_pull=1`;
 
             // Check if an open PR already exists
             const existing = await github.rest.pulls.list({
@@ -62,7 +64,12 @@ jobs:
             });
 
             if (existing.data.length > 0) {
-              core.info(`PR already exists: #${existing.data[0].number} -> ${existing.data[0].html_url}`);
+              const pr = existing.data[0];
+              core.info(`PR already exists: #${pr.number} -> ${pr.html_url}`);
+              await core.summary
+                .addHeading('Auto-PR')
+                .addRaw(`Existing PR: <a href="${pr.html_url}">#${pr.number}</a>`, true)
+                .write();
               return;
             }
 
@@ -77,5 +84,20 @@ jobs:
               'Please review and squash-merge when ready.'
             ].join('\n');
 
-            const pr = await github.rest.pulls.create({ owner, repo, head, base, title, body, draft: false });
-            core.info(`Created PR #${pr.data.number}: ${pr.data.html_url}`);
+            try {
+              const pr = await github.rest.pulls.create({ owner, repo, head, base, title, body, draft: false });
+              core.info(`Created PR #${pr.data.number}: ${pr.data.html_url}`);
+              await core.summary
+                .addHeading('Auto-PR')
+                .addRaw(`Created PR: <a href="${pr.data.html_url}">#${pr.data.number}</a>`, true)
+                .write();
+            } catch (error) {
+              const msg = String(error?.message || error);
+              core.warning(`Could not create PR automatically: ${msg}`);
+              await core.summary
+                .addHeading('Auto-PR blocked')
+                .addRaw('GitHub Actions is not permitted to create PRs for this repository.', true)
+                .addBreak()
+                .addRaw(`You can open a PR manually: <a href="${compareUrl}">${compareUrl}</a>`, true)
+                .write();
+            }
