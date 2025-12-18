@@ -15,23 +15,24 @@ module.exports = async ({ github, context, needs }) => {
   const workflowName = process.env.GITHUB_WORKFLOW;
   const eventName = process.env.GITHUB_EVENT_NAME;
 
-  // Collect detailed job information
+  // Collect detailed job information dynamically from needs context
   const failedJobs = [];
-  const jobDetails = {
-    lint: needs.lint.result,
-    test: needs.test.result,
-    'test-runner': needs['test-runner'].result,
-    security: needs.security.result
-  };
+  const jobDetails = {};
+  
+  // Build jobDetails from actual needs context
+  Object.entries(needs || {}).forEach(([jobName, jobData]) => {
+    jobDetails[jobName] = jobData.result;
+  });
 
-  // Categorize failures
+  // Categorize failures based on job names
   const criticalFailures = [];
   const warningFailures = [];
 
   Object.entries(jobDetails).forEach(([job, status]) => {
     if (status === 'failure') {
       failedJobs.push(job);
-      if (job === 'test' || job === 'security') {
+      // Categorize as critical if it's security, test, or dependency related
+      if (job.includes('test') || job.includes('security') || job.includes('dependency')) {
         criticalFailures.push(job);
       } else {
         warningFailures.push(job);
