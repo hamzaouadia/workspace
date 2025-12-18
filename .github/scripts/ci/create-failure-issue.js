@@ -15,23 +15,24 @@ module.exports = async ({ github, context, needs }) => {
   const workflowName = process.env.GITHUB_WORKFLOW;
   const eventName = process.env.GITHUB_EVENT_NAME;
 
-  // Collect detailed job information
+  // Collect detailed job information dynamically from needs context
   const failedJobs = [];
-  const jobDetails = {
-    lint: needs.lint.result,
-    test: needs.test.result,
-    'test-runner': needs['test-runner'].result,
-    security: needs.security.result
-  };
+  const jobDetails = {};
+  
+  // Build jobDetails from actual needs context
+  Object.entries(needs || {}).forEach(([jobName, jobData]) => {
+    jobDetails[jobName] = jobData.result;
+  });
 
-  // Categorize failures
+  // Categorize failures based on job names
   const criticalFailures = [];
   const warningFailures = [];
 
   Object.entries(jobDetails).forEach(([job, status]) => {
     if (status === 'failure') {
       failedJobs.push(job);
-      if (job === 'test' || job === 'security') {
+      // Categorize as critical if it's security, test, or dependency related
+      if (job.includes('test') || job.includes('security') || job.includes('dependency')) {
         criticalFailures.push(job);
       } else {
         warningFailures.push(job);
@@ -100,14 +101,22 @@ module.exports = async ({ github, context, needs }) => {
   if (criticalFailures.length > 0) {
     errorAnalysis += `#### ${priorityEmoji} Critical Failures (${criticalFailures.length})\n\n`;
     criticalFailures.forEach(job => {
-      if (job === 'test') {
-        errorAnalysis += `- **Tests Failed**: Unit or integration tests are failing. This blocks deployment.\n`;
-        errorAnalysis += `  - Run \`make test\` locally to reproduce\n`;
+      if (job.includes('test')) {
+        errorAnalysis += `- **${job} Failed**: Unit or integration tests are failing. This blocks deployment.\n`;
+        errorAnalysis += `  - Run \`npm test\` locally to reproduce\n`;
         errorAnalysis += `  - Check test output for specific failing tests\n`;
-      } else if (job === 'security') {
-        errorAnalysis += `- **Security Issues Detected**: Bandit found security vulnerabilities in the code.\n`;
-        errorAnalysis += `  - Run \`bandit -r src/\` to see security issues\n`;
-        errorAnalysis += `  - Review and fix security warnings\n`;
+      } else if (job.includes('security')) {
+        errorAnalysis += `- **${job} Failed**: Security vulnerabilities detected in the code.\n`;
+        errorAnalysis += `  - Review security scan results in CI logs\n`;
+        errorAnalysis += `  - Fix security warnings before proceeding\n`;
+      } else if (job.includes('dependency')) {
+        errorAnalysis += `- **${job} Failed**: Vulnerable or problematic dependencies detected.\n`;
+        errorAnalysis += `  - Run \`npm audit\` to see vulnerability details\n`;
+        errorAnalysis += `  - Update vulnerable packages with \`npm audit fix\`\n`;
+        errorAnalysis += `  - Review the dependency changes in the PR\n`;
+      } else {
+        errorAnalysis += `- **${job} Failed**: Critical job failure detected.\n`;
+        errorAnalysis += `  - Check CI logs for details: [View Run](${runUrl})\n`;
       }
     });
   }
@@ -115,15 +124,18 @@ module.exports = async ({ github, context, needs }) => {
   if (warningFailures.length > 0) {
     errorAnalysis += `\n#### 🟡 Code Quality Issues (${warningFailures.length})\n\n`;
     warningFailures.forEach(job => {
-      if (job === 'lint') {
-        errorAnalysis += `- **Linting Failed**: Code style or type checking issues detected.\n`;
-        errorAnalysis += `  - Run \`flake8 src/ tests/\` for style issues\n`;
-        errorAnalysis += `  - Run \`mypy src/\` for type checking\n`;
-        errorAnalysis += `  - Run \`black --check src/ tests/\` for formatting\n`;
-      } else if (job === 'test-runner') {
-        errorAnalysis += `- **Test Runner Issues**: Custom test runner encountered problems.\n`;
-        errorAnalysis += `  - Check test runner configuration\n`;
-        errorAnalysis += `  - Review test execution logs\n`;
+      if (job.includes('lint')) {
+        errorAnalysis += `- **${job} Failed**: Code style or linting issues detected.\n`;
+        errorAnalysis += `  - Run \`npm run lint\` for style issues\n`;
+        errorAnalysis += `  - Run \`npm run typecheck\` for type checking\n`;
+        errorAnalysis += `  - Fix linting errors before proceeding\n`;
+      } else if (job.includes('quality') || job.includes('build')) {
+        errorAnalysis += `- **${job} Failed**: Code quality or build issues detected.\n`;
+        errorAnalysis += `  - Run \`npm run build\` locally to reproduce\n`;
+        errorAnalysis += `  - Check for TypeScript or build errors\n`;
+      } else {
+        errorAnalysis += `- **${job} Failed**: Code quality issue detected.\n`;
+        errorAnalysis += `  - Check CI logs for details: [View Run](${runUrl})\n`;
       }
     });
   }
