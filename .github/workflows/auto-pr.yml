@@ -1,0 +1,55 @@
+name: Auto PR on Successful Checks
+
+on:
+  push:
+    branches:
+      - 'feat/**'
+      - 'fix/**'
+      - 'chore/**'
+      - 'docs/**'
+      - 'refactor/**'
+
+jobs:
+  validate-and-open-pr:
+    name: Validate and Open PR
+    runs-on: ubuntu-latest
+    if: github.ref != 'refs/heads/main'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint --if-present
+
+      - name: Typecheck
+        run: npm run typecheck --if-present
+
+      - name: Build
+        run: npm run build
+
+      - name: Create or update PR to main
+        if: success()
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          base: main
+          branch: ${{ github.ref_name }}
+          title: "ci: open PR for ${{ github.ref_name }}"
+          body: |
+            This PR was automatically created after CI checks passed on branch `${{ github.ref_name }}`.
+
+            - Lint: passed
+            - Typecheck: passed
+            - Build: passed
+
+            Please review and squash-merge when ready.
+          draft: false
