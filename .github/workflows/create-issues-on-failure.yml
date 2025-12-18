@@ -1,13 +1,11 @@
 name: Create Issues on CI Failure
 
 on:
-  # Temporarily disabled until this branch is merged to main
-  # workflow_run triggers use the workflow definition from the default branch
+  workflow_run:
+    workflows: ["CI/CD Pipeline"]
+    types:
+      - completed
   workflow_dispatch:
-  # workflow_run:
-  #   workflows: ["CI/CD Pipeline"]
-  #   types:
-  #     - completed
 
 permissions:
   issues: write
