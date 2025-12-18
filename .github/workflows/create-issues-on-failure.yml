@@ -1,11 +1,10 @@
 name: Create Issues on CI Failure
 
 on:
-  # Temporarily disabled to let old workflow runs complete
-  # workflow_run:
-  #   workflows: ["CI/CD Pipeline"]
-  #   types:
-  #     - completed
+  workflow_run:
+    workflows: ["CI/CD Pipeline"]
+    types:
+      - completed
   workflow_dispatch:
 
 permissions:
