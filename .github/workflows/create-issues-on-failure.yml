@@ -25,76 +25,40 @@ jobs:
 
       - name: Check if scripts exist
         id: check-scripts
-        run: |
-          if [ ! -d ".github/scripts/utils" ] || [ ! -d ".github/scripts/ci" ]; then
-            echo "scripts_exist=false" >> $GITHUB_OUTPUT
-            echo "⚠️ Scripts not found in commit ${{ github.event.workflow_run.head_sha }} - skipping issue automation"
-          else
-            echo "scripts_exist=true" >> $GITHUB_OUTPUT
-          fi
+        run: ./.github/scripts/utils/check-scripts-exist.sh "${{ github.event.workflow_run.head_sha }}"
 
       - name: Download workflow artifacts
         if: steps.check-scripts.outputs.scripts_exist == 'true'
         uses: actions/github-script@v7
         with:
-          script: |
-            const script = require('./.github/scripts/utils/download-artifacts.js');
-            await script({ github, context, runId: ${{ github.event.workflow_run.id }} });
+          script: "const script = require('./.github/scripts/utils/download-artifacts.js'); await script({ github, context, runId: ${{ github.event.workflow_run.id }} });"
 
       - name: Get workflow run details
         if: steps.check-scripts.outputs.scripts_exist == 'true'
         id: workflow-details
         uses: actions/github-script@v7
         with:
-          script: |
-            const script = require('./.github/scripts/utils/get-workflow-details.js');
-            await script({ github, context, core, runId: ${{ github.event.workflow_run.id }} });
+          script: "const script = require('./.github/scripts/utils/get-workflow-details.js'); await script({ github, context, core, runId: ${{ github.event.workflow_run.id }} });"
 
       - name: Get jobs details
         if: steps.check-scripts.outputs.scripts_exist == 'true'
         id: jobs-details
         uses: actions/github-script@v7
         with:
-          script: |
-            const script = require('./.github/scripts/utils/get-jobs-details.js');
-            await script({ github, context, core, runId: ${{ github.event.workflow_run.id }} });
+          script: "const script = require('./.github/scripts/utils/get-jobs-details.js'); await script({ github, context, core, runId: ${{ github.event.workflow_run.id }} });"
 
       - name: Check for existing issue
         if: steps.check-scripts.outputs.scripts_exist == 'true'
         id: check-issue
         uses: actions/github-script@v7
         with:
-          script: |
-            const script = require('./.github/scripts/ci/check-existing-issue.js');
-            await script({
-              github,
-              context,
-              core,
-              branch: '${{ steps.workflow-details.outputs.head_branch }}'
-            });
+          script: "const script = require('./.github/scripts/ci/check-existing-issue.js'); await script({ github, context, core, branch: '${{ steps.workflow-details.outputs.head_branch }}' });"
 
       - name: Create or update issue
         if: steps.check-scripts.outputs.scripts_exist == 'true'
         uses: actions/github-script@v7
         with:
-          script: |
-            const script = require('./.github/scripts/ci/create-or-update-issue.js');
-            const failedSteps = JSON.parse('${{ steps.jobs-details.outputs.failed_steps }}');
-
-            await script({
-              github,
-              context,
-              params: {
-                branch: '${{ steps.workflow-details.outputs.head_branch }}',
-                sha: '${{ steps.workflow-details.outputs.head_sha }}',
-                runUrl: '${{ steps.workflow-details.outputs.run_url }}',
-                runNumber: '${{ steps.workflow-details.outputs.run_number }}',
-                actor: '${{ steps.workflow-details.outputs.triggering_actor }}',
-                failedSteps: failedSteps,
-                issueExists: '${{ steps.check-issue.outputs.issue_exists }}' === 'true',
-                issueNumber: '${{ steps.check-issue.outputs.issue_number }}'
-              }
-            });
+          script: "const script = require('./.github/scripts/ci/create-or-update-issue.js'); const failedSteps = JSON.parse('${{ steps.jobs-details.outputs.failed_steps }}'); await script({ github, context, params: { branch: '${{ steps.workflow-details.outputs.head_branch }}', sha: '${{ steps.workflow-details.outputs.head_sha }}', runUrl: '${{ steps.workflow-details.outputs.run_url }}', runNumber: '${{ steps.workflow-details.outputs.run_number }}', actor: '${{ steps.workflow-details.outputs.triggering_actor }}', failedSteps: failedSteps, issueExists: '${{ steps.check-issue.outputs.issue_exists }}' === 'true', issueNumber: '${{ steps.check-issue.outputs.issue_number }}' } });"
 
   close-issue-on-success:
     runs-on: ubuntu-latest
@@ -108,31 +72,17 @@ jobs:
 
       - name: Check if scripts exist
         id: check-scripts
-        run: |
-          if [ ! -d ".github/scripts/utils" ] || [ ! -d ".github/scripts/ci" ]; then
-            echo "scripts_exist=false" >> $GITHUB_OUTPUT
-            echo "⚠️ Scripts not found - skipping issue closing"
-          else
-            echo "scripts_exist=true" >> $GITHUB_OUTPUT
-          fi
+        run: ./.github/scripts/utils/check-scripts-exist.sh "closing"
 
       - name: Get workflow details
         if: steps.check-scripts.outputs.scripts_exist == 'true'
         id: workflow-details
         uses: actions/github-script@v7
         with:
-          script: |
-            const script = require('./.github/scripts/utils/get-workflow-details.js');
-            await script({ github, context, core, runId: ${{ github.event.workflow_run.id }} });
+          script: "const script = require('./.github/scripts/utils/get-workflow-details.js'); await script({ github, context, core, runId: ${{ github.event.workflow_run.id }} });"
 
       - name: Close related issues
         if: steps.check-scripts.outputs.scripts_exist == 'true'
         uses: actions/github-script@v7
         with:
-          script: |
-            const script = require('./.github/scripts/ci/close-ci-issues.js');
-            await script({
-              github,
-              context,
-              branch: '${{ steps.workflow-details.outputs.head_branch }}'
-            });
+          script: "const script = require('./.github/scripts/ci/close-ci-issues.js'); await script({ github, context, branch: '${{ steps.workflow-details.outputs.head_branch }}' });"

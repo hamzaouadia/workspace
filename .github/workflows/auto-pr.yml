@@ -23,43 +23,21 @@ jobs:
       github.event.workflow_run.conclusion == 'success' &&
       github.event.workflow_run.head_branch != 'main'
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Debug workflow_run context
         uses: actions/github-script@v7
         with:
-          script: |
-            core.info(`head_branch: ${context.payload.workflow_run.head_branch}`);
-            core.info(`head_repository.full_name: ${context.payload.workflow_run.head_repository.full_name}`);
-            core.info(`Event: ${JSON.stringify(context.payload.workflow_run, null, 2)}`);
+          script: const script = require('./.github/scripts/auto-pr/debug-workflow-run.js'); await script({ core, context });
       
       - name: Check for open CI failure issues
         id: check-issues
         uses: actions/github-script@v7
         with:
-          script: |
-            const branch = context.payload.workflow_run.head_branch;
-            
-            // Check for open CI failure issues
-            const issues = await github.rest.issues.listForRepo({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              state: 'open',
-              labels: 'ci-failure',
-              per_page: 100
-            });
-            
-            const branchIssue = issues.data.find(issue => 
-              issue.title.includes(branch) || issue.body.includes(branch)
-            );
-            
-            if (branchIssue) {
-              core.setOutput('has_issues', 'true');
-              core.info(`Found open CI issue #${branchIssue.number} for branch ${branch}`);
-            } else {
-              core.setOutput('has_issues', 'false');
-              core.info(`No open CI issues for branch ${branch}`);
-            }
+          script: const script = require('./.github/scripts/auto-pr/check-ci-issues.js'); await script({ github, context, core });
 
-      - name: Checkout
+      - name: Checkout branch
         if: steps.check-issues.outputs.has_issues == 'false'
         uses: actions/checkout@v4
         with:
