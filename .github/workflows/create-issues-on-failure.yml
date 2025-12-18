@@ -22,7 +22,18 @@ jobs:
         with:
           ref: ${{ github.event.workflow_run.head_sha }}
 
+      - name: Check if scripts exist
+        id: check-scripts
+        run: |
+          if [ ! -d ".github/scripts/utils" ] || [ ! -d ".github/scripts/ci" ]; then
+            echo "scripts_exist=false" >> $GITHUB_OUTPUT
+            echo "⚠️ Scripts not found in commit ${{ github.event.workflow_run.head_sha }} - skipping issue automation"
+          else
+            echo "scripts_exist=true" >> $GITHUB_OUTPUT
+          fi
+
       - name: Download workflow artifacts
+        if: steps.check-scripts.outputs.scripts_exist == 'true'
         uses: actions/github-script@v7
         with:
           script: |
@@ -30,6 +41,7 @@ jobs:
             await script({ github, context, runId: ${{ github.event.workflow_run.id }} });
 
       - name: Get workflow run details
+        if: steps.check-scripts.outputs.scripts_exist == 'true'
         id: workflow-details
         uses: actions/github-script@v7
         with:
@@ -38,6 +50,7 @@ jobs:
             await script({ github, context, core, runId: ${{ github.event.workflow_run.id }} });
 
       - name: Get jobs details
+        if: steps.check-scripts.outputs.scripts_exist == 'true'
         id: jobs-details
         uses: actions/github-script@v7
         with:
@@ -46,6 +59,7 @@ jobs:
             await script({ github, context, core, runId: ${{ github.event.workflow_run.id }} });
 
       - name: Check for existing issue
+        if: steps.check-scripts.outputs.scripts_exist == 'true'
         id: check-issue
         uses: actions/github-script@v7
         with:
@@ -59,6 +73,7 @@ jobs:
             });
 
       - name: Create or update issue
+        if: steps.check-scripts.outputs.scripts_exist == 'true'
         uses: actions/github-script@v7
         with:
           script: |
