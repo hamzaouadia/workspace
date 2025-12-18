@@ -1,0 +1,10 @@
+name: (disabled) Dependency Updates
+
+on:
+  workflow_dispatch:
+
+jobs:
+  noop:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Use Dependabot for dependency updates."

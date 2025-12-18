@@ -1,0 +1,15 @@
+# Code Owners for this project
+# Reviewers auto-requested on changes
+
+# Global owners
+* @hamzaouadia @yabdoul
+
+# Source code
+/src/ @hamzaouadia @yabdoul
+
+# CI/CD and workflows
+/.github/ @hamzaouadia @yabdoul
+
+# Documentation and config
+/README.md @hamzaouadia @yabdoul
+/.gitignore @hamzaouadia @yabdoul

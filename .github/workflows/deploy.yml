@@ -1,0 +1,10 @@
+name: (disabled) Deploy
+
+on:
+  workflow_dispatch:
+
+jobs:
+  noop:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Deployment via Actions is disabled. Use Vercel/Netlify auto-deploy on main."
