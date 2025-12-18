@@ -25,7 +25,7 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const script = require('./.github/scripts/download-artifacts.js');
+            const script = require('./.github/scripts/utils/download-artifacts.js');
             await script({ github, context, runId: ${{ github.event.workflow_run.id }} });
 
       - name: Get workflow run details
@@ -33,7 +33,7 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const script = require('./.github/scripts/get-workflow-details.js');
+            const script = require('./.github/scripts/utils/get-workflow-details.js');
             await script({ github, context, core, runId: ${{ github.event.workflow_run.id }} });
 
       - name: Get jobs details
@@ -41,7 +41,7 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const script = require('./.github/scripts/get-jobs-details.js');
+            const script = require('./.github/scripts/utils/get-jobs-details.js');
             await script({ github, context, core, runId: ${{ github.event.workflow_run.id }} });
 
       - name: Check for existing issue
@@ -49,7 +49,7 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const script = require('./.github/scripts/check-existing-issue.js');
+            const script = require('./.github/scripts/ci/check-existing-issue.js');
             await script({
               github,
               context,
@@ -61,7 +61,7 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const script = require('./.github/scripts/create-or-update-issue.js');
+            const script = require('./.github/scripts/ci/create-or-update-issue.js');
             const failedSteps = JSON.parse('${{ steps.jobs-details.outputs.failed_steps }}');
 
             await script({
@@ -89,14 +89,14 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const script = require('./.github/scripts/get-workflow-details.js');
+            const script = require('./.github/scripts/utils/get-workflow-details.js');
             await script({ github, context, core, runId: ${{ github.event.workflow_run.id }} });
 
       - name: Close related issues
         uses: actions/github-script@v7
         with:
           script: |
-            const script = require('./.github/scripts/close-ci-issues.js');
+            const script = require('./.github/scripts/ci/close-ci-issues.js');
             await script({
               github,
               context,

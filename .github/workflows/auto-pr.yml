@@ -1,7 +1,10 @@
-name: Auto PR on Successful Checks
+name: Auto PR on Successful CI
 
 on:
-  push:
+  workflow_run:
+    workflows: ["CI/CD Pipeline"]
+    types:
+      - completed
     branches:
       - 'feat/**'
       - 'fix/**'
@@ -13,43 +16,30 @@ on:
 permissions:
   contents: read
   pull-requests: write
-  issues: write
 
 jobs:
-  validate-and-open-pr:
-    name: Validate and Open PR
+  create-pr:
+    name: Create PR to main
     runs-on: ubuntu-latest
-    if: github.ref != 'refs/heads/main'
+    if: >
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.head_branch != 'main'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Lint
-        run: npm run lint --if-present
-
-      - name: Typecheck
-        run: npm run typecheck --if-present
-
-      - name: Build
-        run: npm run build
+          ref: ${{ github.event.workflow_run.head_branch }}
 
       - name: Create PR to main
-        if: success()
         uses: diillson/auto-pull-request@v1.0.1
         with:
+          source_branch: ${{ github.event.workflow_run.head_branch }}
           destination_branch: "main"
-          pr_title: "ci: open PR for ${{ github.ref_name }}"
+          pr_title: "ci: open PR for ${{ github.event.workflow_run.head_branch }}"
           pr_body: |
-            This PR was automatically created after CI checks passed on branch `${{ github.ref_name }}`.
+            This PR was automatically created after CI checks passed on branch `${{ github.event.workflow_run.head_branch }}`.
+
+            **CI Run:** [#${{ github.event.workflow_run.run_number }}](${{ github.event.workflow_run.html_url }})
 
             - Lint: ✅ passed
             - Typecheck: ✅ passed
