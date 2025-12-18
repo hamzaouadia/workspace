@@ -1,0 +1,10 @@
+name: (disabled) Legacy CI/CD Pipeline
+
+on:
+  workflow_dispatch:
+
+jobs:
+  noop:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "This legacy workflow is disabled for this project. Use CI.yml"
