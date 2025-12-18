@@ -18,7 +18,10 @@ jobs:
   create-pr:
     name: Create PR to main
     runs-on: ubuntu-latest
-    if: github.event.workflow_run.conclusion == 'success'
+    # Only run if CI succeeded AND the branch is not main
+    if: |
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.head_branch != 'main'
     steps:
       - name: Debug workflow_run context
         uses: actions/github-script@v7
@@ -35,14 +38,7 @@ jobs:
           script: |
             const branch = context.payload.workflow_run.head_branch;
             
-            // Skip if branch is main
-            if (branch === 'main') {
-              core.setOutput('should_skip', 'true');
-              core.info(`Skipping PR creation for main branch`);
-              return;
-            }
-            core.setOutput('should_skip', 'false');
-            
+            // Check for open CI failure issues
             const issues = await github.rest.issues.listForRepo({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -64,13 +60,13 @@ jobs:
             }
 
       - name: Checkout
-        if: steps.check-issues.outputs.should_skip == 'false' && steps.check-issues.outputs.has_issues == 'false'
+        if: steps.check-issues.outputs.has_issues == 'false'
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.workflow_run.head_branch }}
 
       - name: Create PR to main
-        if: steps.check-issues.outputs.should_skip == 'false' && steps.check-issues.outputs.has_issues == 'false'
+        if: steps.check-issues.outputs.has_issues == 'false'
         uses: diillson/auto-pull-request@v1.0.1
         with:
           source_branch: ${{ github.event.workflow_run.head_branch }}
