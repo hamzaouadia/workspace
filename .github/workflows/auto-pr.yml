@@ -2,7 +2,7 @@ name: Auto PR on Successful CI
 
 on:
   workflow_run:
-    workflows: ["Create Issues on CI Failure"]
+    workflows: ["CI/CD Pipeline"]
     types:
       - completed
     # Note: Don't filter by branches here because workflow_run always reports main as head_branch
