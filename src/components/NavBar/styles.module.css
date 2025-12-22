@@ -1,0 +1,120 @@
+/* Navbar Custom Styles */
+
+/* Logo hover effect */
+.navbar-logo {
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.navbar-logo::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #d97706, #ea580c);
+  transition: width 0.3s ease;
+}
+
+.navbar-logo:hover::after {
+  width: 100%;
+}
+
+/* Desktop menu items with underline animation */
+.nav-link {
+  position: relative;
+  padding-bottom: 2px;
+}
+
+.nav-link::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background: #d97706;
+  transform: translateX(-50%);
+  transition: width 0.3s ease;
+}
+
+.nav-link:hover::before {
+  width: 70%;
+}
+
+/* Reserve button gradient hover */
+.reserve-btn {
+  background: linear-gradient(135deg, #d97706, #ea580c);
+  box-shadow: 0 2px 8px rgba(217, 119, 6, 0.3);
+  transition: all 0.3s ease;
+}
+
+.reserve-btn:hover {
+  background: linear-gradient(135deg, #b45309, #c2410c);
+  box-shadow: 0 4px 12px rgba(217, 119, 6, 0.5);
+  transform: translateY(-1px);
+}
+
+.reserve-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(217, 119, 6, 0.4);
+}
+
+/* Mobile menu smooth slide */
+.mobile-menu {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.3s ease;
+}
+
+.mobile-menu.open {
+  max-height: 500px;
+  opacity: 1;
+}
+
+/* Mobile menu items fade in */
+.mobile-menu-item {
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: all 0.3s ease;
+}
+
+.mobile-menu.open .mobile-menu-item {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.mobile-menu.open .mobile-menu-item:nth-child(1) { transition-delay: 0.05s; }
+.mobile-menu.open .mobile-menu-item:nth-child(2) { transition-delay: 0.1s; }
+.mobile-menu.open .mobile-menu-item:nth-child(3) { transition-delay: 0.15s; }
+.mobile-menu.open .mobile-menu-item:nth-child(4) { transition-delay: 0.2s; }
+.mobile-menu.open .mobile-menu-item:nth-child(5) { transition-delay: 0.25s; }
+.mobile-menu.open .mobile-menu-item:nth-child(6) { transition-delay: 0.3s; }
+
+/* Hamburger animation */
+.hamburger-line {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Sticky navbar blur effect */
+.navbar-sticky {
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.95);
+}
+
+/* Subtle top border accent */
+.navbar-accent {
+  border-top: 3px solid transparent;
+  border-image: linear-gradient(90deg, #d97706, #ea580c, #d97706);
+  border-image-slice: 1;
+  transition: all 0.3s ease;
+}
+
+/* Restaurant elegant font styling */
+.restaurant-heading {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  letter-spacing: 0.5px;
+}

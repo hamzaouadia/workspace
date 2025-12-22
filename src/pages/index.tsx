@@ -1,9 +1,5 @@
 import Head from 'next/head'
-import Navbar from '../components/Navbar'
-import Hero from '../components/Hero'
-import Menu from '../components/Menu'
-import Hours from '../components/Hours'
-import Footer from '../components/Footer'
+import { Navbar, Hero, Menu, Hours, Footer, Banner } from '../components'
 
 export default function Home() {
   return (
@@ -15,7 +11,10 @@ export default function Home() {
       </Head>
       <div className="min-h-screen bg-white text-gray-900" id="top">
         <Navbar />
-      </div>
+             <Banner/> 
+      </div>    
+      <Footer>
+      </Footer>
     </>
   )
 }
